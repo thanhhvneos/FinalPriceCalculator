@@ -101,6 +101,7 @@ Rules:
 Output:
 * Fully typed functions
 * Easy to unit test
+* Tạo file test cho các function logic mới thêm.
 
 ## PHASE 4 — UI SKELETON (NO LOGIC)
 Goal: Render UI nhưng chưa có tính toán
@@ -257,3 +258,6 @@ Checklist:
 - No unnecessary complexity
 
 Suggest improvements if needed.
+
+Test file:
+npx jest __tests__/utils/calculator.test.ts --no-coverage
