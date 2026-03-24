@@ -11,6 +11,8 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/navigation';
 import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
+import {useCalculatorStore} from '../store/calculatorStore';
+import {CalculationInput} from '../types/calculator'; // keyof only — no parsing
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -20,6 +22,18 @@ export default function HomeScreen({navigation}: Props) {
   const [maxDiscount, setMaxDiscount] = useState('');
   const [voucher, setVoucher] = useState('');
   const [shipping, setShipping] = useState('');
+
+  const setField = useCalculatorStore(s => s.setField);
+  const result = useCalculatorStore(s => s.result);
+
+  function handleChange(
+    key: keyof CalculationInput,
+    text: string,
+    setter: (v: string) => void,
+  ) {
+    setter(text);
+    setField(key, text);
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -31,21 +45,25 @@ export default function HomeScreen({navigation}: Props) {
           <InputField
             label="Original Price"
             value={price}
-            onChangeText={setPrice}
+            onChangeText={text => handleChange('price', text, setPrice)}
             placeholder="0"
           />
           <InputField
             label="Discount %"
             value={discountPercent}
-            onChangeText={setDiscountPercent}
+            onChangeText={text =>
+              handleChange('discountPercent', text, setDiscountPercent)
+            }
             placeholder="0"
             suffix="%"
           />
           <InputField
             label="Max Discount"
             value={maxDiscount}
-            onChangeText={setMaxDiscount}
-            placeholder="0 = no cap"
+            onChangeText={text =>
+              handleChange('maxDiscount', text, setMaxDiscount)
+            }
+            placeholder="Leave empty for no cap"
           />
         </View>
 
@@ -54,18 +72,21 @@ export default function HomeScreen({navigation}: Props) {
           <InputField
             label="Voucher"
             value={voucher}
-            onChangeText={setVoucher}
+            onChangeText={text => handleChange('voucher', text, setVoucher)}
             placeholder="0"
           />
           <InputField
             label="Shipping"
             value={shipping}
-            onChangeText={setShipping}
+            onChangeText={text => handleChange('shipping', text, setShipping)}
             placeholder="0"
           />
         </View>
 
-        <ResultCard finalPrice={0} savedAmount={0} />
+        <ResultCard
+          finalPrice={result.finalPrice}
+          savedAmount={result.savedAmount}
+        />
 
         <TouchableOpacity style={styles.saveButton} onPress={() => {}}>
           <Text style={styles.saveButtonText}>Save</Text>
