@@ -13,6 +13,7 @@ import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
 import {useCalculatorStore} from '../store/calculatorStore';
 import {CalculationInput} from '../types/calculator'; // keyof only — no parsing
+import {saveHistory} from '../services/historyService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -25,6 +26,20 @@ export default function HomeScreen({navigation}: Props) {
 
   const setField = useCalculatorStore(s => s.setField);
   const result = useCalculatorStore(s => s.result);
+  const input = useCalculatorStore(s => s.input);
+
+  async function handleSave() {
+    try {
+      await saveHistory({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        input: {...input},
+        result: {...result},
+        createdAt: Date.now(),
+      });
+    } catch (e) {
+      console.warn('Failed to save history:', e);
+    }
+  }
 
   function handleChange(
     key: keyof CalculationInput,
@@ -88,7 +103,7 @@ export default function HomeScreen({navigation}: Props) {
           savedAmount={result.savedAmount}
         />
 
-        <TouchableOpacity style={styles.saveButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
 

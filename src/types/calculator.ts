@@ -16,5 +16,5 @@ export type HistoryItem = {
   id: string;
   input: CalculationInput;
   result: CalculationResult;
-  timestamp: number;
+  createdAt: number;
 };
