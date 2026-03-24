@@ -1,4 +1,6 @@
+import {CalculationInput} from './calculator';
+
 export type RootStackParamList = {
-  Home: undefined;
+  Home: {restore?: CalculationInput} | undefined;
   History: undefined;
 };

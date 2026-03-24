@@ -21,6 +21,7 @@ type CalculatorStore = {
   result: CalculationResult;
   setField: (key: keyof CalculationInput, raw: string) => void;
   calculate: () => void;
+  restoreInput: (input: CalculationInput) => void;
 };
 
 function parseField(raw: string): number {
@@ -40,5 +41,10 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
   calculate: () => {
     const result = calculateFinalPrice(get().input);
     set({result});
+  },
+
+  restoreInput: (input: CalculationInput) => {
+    set({input: {...input}});
+    get().calculate();
   },
 }));

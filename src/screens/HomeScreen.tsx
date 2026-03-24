@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import {saveHistory} from '../services/historyService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-export default function HomeScreen({navigation}: Props) {
+export default function HomeScreen({navigation, route}: Props) {
   const [price, setPrice] = useState('');
   const [discountPercent, setDiscountPercent] = useState('');
   const [maxDiscount, setMaxDiscount] = useState('');
@@ -27,6 +27,28 @@ export default function HomeScreen({navigation}: Props) {
   const setField = useCalculatorStore(s => s.setField);
   const result = useCalculatorStore(s => s.result);
   const input = useCalculatorStore(s => s.input);
+  const restoreInput = useCalculatorStore(s => s.restoreInput);
+  const restoredIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const restored = route.params?.restore;
+    // Guard: skip if no params or same object was already restored
+    const paramKey = restored ? JSON.stringify(restored) : null;
+    if (!restored || paramKey === restoredIdRef.current) {
+      return;
+    }
+    restoredIdRef.current = paramKey;
+    restoreInput(restored);
+    setPrice(restored.price != null ? String(restored.price) : '');
+    setDiscountPercent(
+      restored.discountPercent != null ? String(restored.discountPercent) : '',
+    );
+    setMaxDiscount(
+      restored.maxDiscount != null ? String(restored.maxDiscount) : '',
+    );
+    setVoucher(restored.voucher != null ? String(restored.voucher) : '');
+    setShipping(restored.shipping != null ? String(restored.shipping) : '');
+  }, [route.params?.restore, restoreInput]);
 
   async function handleSave() {
     try {

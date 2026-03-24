@@ -1,26 +1,56 @@
-import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useFocusEffect} from '@react-navigation/native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types/navigation';
+import {HistoryItem} from '../types/calculator';
+import {getHistory} from '../services/historyService';
+import HistoryCard from '../components/HistoryCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'History'>;
 
 export default function HistoryScreen({navigation}: Props) {
+  const [items, setItems] = useState<HistoryItem[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      getHistory()
+        .then(setItems)
+        .catch(e => console.warn('Failed to load history:', e));
+    }, []),
+  );
+
+  const handlePress = useCallback(
+    (item: HistoryItem) => {
+      navigation.navigate('Home', {restore: item.input});
+    },
+    [navigation],
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.content}>
-        <Text style={styles.title}>No history yet</Text>
-        <Text style={styles.subtitle}>
-          Your saved calculations will appear here.
-        </Text>
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>Back to Calculator</Text>
-        </TouchableOpacity>
-      </View>
+      <FlatList
+        data={items}
+        keyExtractor={item => item.id ?? String(item.createdAt)}
+        renderItem={({item}) => (
+          <HistoryCard item={item} onPress={handlePress} />
+        )}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>No history yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Save a calculation to see it here.
+            </Text>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -30,33 +60,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
-  content: {
+  list: {
+    padding: 16,
+    flexGrow: 1,
+  },
+  empty: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingTop: 80,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: '#111827',
     marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 15,
+  emptySubtitle: {
+    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 32,
-  },
-  backButton: {
-    backgroundColor: '#6B7280',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-  },
-  backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
+
